@@ -50,6 +50,7 @@ microservices:
   product: http://product-service-svc/product/
   payment: http://payment-service-svc/payment/
 
+#test
 #eureka:
 #  client:
 #    register-with-eureka: true
