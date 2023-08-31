@@ -1,0 +1,61 @@
+server:
+  port: 9090
+
+spring:
+  redis:
+    host: redis
+    port: 6379
+  application:
+    name: API-GATEWAY
+  config:
+    import: configserver:${CONFIG_SERVER_ENV:http://localhost:9296}
+  cloud:
+    gateway:
+      routes:
+        - id: ORDER-SERVICE
+          uri: http://order-service-svc
+          predicates:
+            - Path=/order/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ORDER-SERVICE
+                fallbackuri: forward:/OrderFallBack
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+        - id: PAYMENT-SERVICE
+          uri: http://payment-service-svc
+          predicates:
+            - Path=/payment/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: PAYMENT-SERVICE
+                fallbackuri: forward:/PaymentFallBack
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+        - id: PRODUCT-SERVICE
+          uri: http://product-service-svc
+          predicates:
+            - Path=/product/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: PRODUCT-SERVICE
+                fallbackuri: forward:/ProductFallBack
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+
+okta:
+  oauth2:
+    issuer: https://dev-93513533.okta.com/oauth2/default
+    audience: api://default
+    client-id: 0oaaul6c8kvphNy3p5d7
+    client-secret: VAzhWoPS-9Uh4NsOcgmTXvTbGIsPUjKzIRZZQIG-6gwtFHFKhUN3tKeAIm_MImob
+    scopes: openid, email, profile, offline_access
